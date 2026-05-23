@@ -1,0 +1,2 @@
+pair_id,event_id,region,split,sensor,pre_image_path,post_image_path,pre_qa_path,post_qa_path,qa_mode,label_mask_path,pre_date,post_date,cloud_fraction,notes
+kangaroo_island_fire_2020_landsat8,kangaroo_island_fire_2020,Australia,external_test,landsat8,,,,,landsat_qa_pixel,,2019-10-21,2020-02-10,0.0447,real_stac_pair pre_item=LC08_L2SP_098085_20191021_02_T1 post_item=LC08_L2SP_098085_20200210_02_T1 label=dNBR(threshold=0.1)

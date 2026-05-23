@@ -1,0 +1,6 @@
+Manifest population checklist:
+1. Fill pre_image_path and post_image_path with georeferenced raster paths.
+2. Fill pre_qa_path and post_qa_path for QA-based cloud/smoke masking (qa_mode defaults by sensor).
+3. Ensure label_mask_path is binary burned-area mask in the same CRS grid after harmonization.
+4. Keep australia_external_test entries isolated from training and model selection.
+5. Record cloud_fraction, pre_date, and post_date for filtering traceability.

@@ -1,0 +1,104 @@
+project:
+  title: "Cross-Region Burned-Area Mapping from California to Australia: A Six-Architecture Benchmark with Per-Sensor Reflectance Normalization, dNBR-vs-MTBS Label Validation, and Multi-Method Explainability"
+  target_task: "binary_burned_area_segmentation"
+  output_units:
+    - "sq_km"
+    - "sq_miles"
+
+pairing_rules:
+  pre_event_window_days: 180
+  post_event_window_days: 90
+  max_cloud_fraction: 0.2
+  min_overlap_fraction: 0.95
+
+harmonization:
+  target_crs: "EPSG:6933"
+  target_resolution_m: 30
+  resampling:
+    spectral: "bilinear"
+    mask: "nearest"
+  # Per-sensor reflectance normalization is applied at the data-loader level (src/data/sensor_normalization.py),
+  # not at harmonization time. Sentinel-2 L2A: scale = 1/10000, offset = 0. Landsat 8/9 C2 L2: scale = 2.75e-5,
+  # offset = -0.2. The result is approximately [0, 1] surface reflectance regardless of source sensor.
+  per_sensor_reflectance_normalization: true
+
+labels:
+
+  primary: "dnbr_threshold_tau_0.10"
+  threshold_tau: 0.10
+
+datasets:
+  california_train_val:
+    role: "train_val"
+    region: "California, USA"
+    n_events: 8
+    events:
+      - camp_fire_2018
+      - creek_fire_2020
+      - dixie_fire_2021
+      - carr_fire_2018
+      - thomas_fire_2017
+      - kincade_fire_2019
+      - august_complex_2020
+      - lnu_complex_2020
+    sensors:
+      - "sentinel2"
+      - "landsat8"
+      - "landsat9"
+    imagery_sources:
+      - "Copernicus Sentinel-2 L2A (via Microsoft Planetary Computer STAC)"
+      - "USGS Landsat Collection 2 Level-2 (via Microsoft Planetary Computer STAC)"
+    label_validation:
+      - "MTBS Burned Area Boundaries shapefile (rasterized to 30 m, clipped to QA-valid intersection of pre+post scenes)"
+    notes: "Use for training and in-domain k-fold validation only. dNBR-derived training labels validated against MTBS in scripts/mtbs_validation.py."
+
+  australia_external_test:
+    role: "external_test"
+    region: "Australia"
+    n_events: 8
+    events:
+      - kangaroo_island_fire_2020
+      - gippsland_fires_2020
+      - nsw_black_summer_2020
+      - tasmania_fires_2019
+      - namadgi_fire_2020
+      - blue_mountains_2019
+      - perth_hills_2021
+      - pilbara_fires_2023
+    sensors:
+      - "sentinel2"
+      - "landsat8"
+      - "landsat9"
+    imagery_sources:
+      - "Copernicus Sentinel-2 L2A (via Microsoft Planetary Computer STAC)"
+      - "USGS Landsat Collection 2 Level-2 (via Microsoft Planetary Computer STAC)"
+    label_validation:
+      - "Geoscience Australia / Digital Earth Australia burnt-area products"
+    notes: "Must remain unseen during training and model selection. Used only for cross-region external evaluation."
+
+  mediterranean_external_test:
+    role: "external_test"
+    region: "Mediterranean Europe"
+    n_events: 4
+    events:
+      - evros_fire_2023
+      - rhodes_fire_2023
+      - pedrogao_grande_fire_2017
+      - sierra_culebra_fire_2022
+    sensors:
+      - "sentinel2"
+      - "landsat8"
+      - "landsat9"
+    imagery_sources:
+      - "Copernicus Sentinel-2 L2A (via Microsoft Planetary Computer STAC)"
+      - "USGS Landsat Collection 2 Level-2 (via Microsoft Planetary Computer STAC)"
+    label_validation:
+      - "Copernicus EMS Rapid Mapping perimeters"
+    notes: "Third external-test region. Must remain unseen during training and model selection."
+
+  cabuar_california_external_benchmark:
+    role: "external_benchmark"
+    region: "California, USA"
+    source: "DarthReca/california_burned_areas (HuggingFace) - Cambrin et al. 2024 IEEE GRS Magazine"
+    sensors: ["sentinel2"]
+    notes: "Used for cross-dataset transfer evaluation. NOT in the training set; the CaBuAr California fires do not overlap our 8 California training events."
